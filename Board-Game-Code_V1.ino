@@ -1,24 +1,38 @@
-#include <Wire.h> 
+const int joy_x = A1;
+const int joy_y = A0;
 
-// Set the LCD address to 0x27 or 0x3F for a 16 chars and 2 line display
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_PCD8544.h>
+Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 
-void setup() {
-  lcd.init();
-  lcd.backlight();
+void setup()   {
+  Serial.begin(9600);
+  display.begin();
+  display.setContrast(60);
+  display.clearDisplay();
+  pinMode(joy_x, INPUT);
+  pinMode(joy_y, INPUT);
 }
 
-void start_menu() {
-  lcd.clear();
-  lcd.setCursor(2, 0); 
-  lcd.print("1. New Game!");
-  lcd.setCursor(2, 0);
-  lcd.noBacklight(); // Turn off backlight
-  delay(500);
-  lcd.backlight();   // Turn on backlight
-  delay(500);
+void sys_menu() {
+  display.setTextSize(1);
+  display.setTextColor(BLACK);
+  display.setCursor(13, 20);
+  display.print("New, Game!");
+  display.display();
+}
+
+void joy_val() {
+  int val_x = analogRead(joy_x);
+  Serial.print(val_x);
+  Serial.print(" ");
+  int val_y = analogRead(joy_y);
+  Serial.println(val_y);
 }
 
 void loop() {
-  start_menu();
+  sys_menu();
+  joy_val();
 }
+
