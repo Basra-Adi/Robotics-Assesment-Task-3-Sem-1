@@ -11,7 +11,7 @@ unsigned long debounceDelay = 50;
 
 // Information and nav variables
 int nav = 0;
-char nav_sub;
+int nav_sub = 0;
 int num_players;
 
 //Joystick Debounce
@@ -46,7 +46,7 @@ void setup()   {
 }
 
 void sys_menu() {
-  if (nav == 0){
+  if (nav == 0 && nav_sub == 0){
     // display init
     display.clearDisplay();
     display.setTextSize(1);
@@ -56,8 +56,13 @@ void sys_menu() {
     display.setCursor(13, 20);
     display.print("New, Game!");
     display.display();
+
+    if (btn_press == HIGH){
+      nav = nav + 1;
+      btn_press == LOW;
+    }
   }
-  else if (nav == 1){
+  else if (nav == 1 && nav_sub == 0){
     // display init
     display.clearDisplay();
     display.setTextSize(1);
@@ -66,10 +71,11 @@ void sys_menu() {
     //display info
     display.setCursor(0, 0);
     display.println("Number of ");
-    display.println("Players: 0");
+    display.print("Players: ");
+    display.print(num_players);
     display.display();
   }
-  else if (nav == 2){
+  else if (nav_sub == 1 && nav == 1){
     // display init
     display.clearDisplay();
     display.setTextSize(1);
@@ -106,7 +112,7 @@ void joy_val() {
   }
 
   // joy x val deb 
-  if (millis() - x_deb > 250){
+  if (millis() - x_deb > 100){
     x_deb = millis();
     if (x_state != move_x){
 
@@ -115,11 +121,14 @@ void joy_val() {
 
       if (x_count == HIGH){
         if (move_x == 1){
-          nav = nav + 1;
+          if(nav == 1){
+            nav_sub = nav_sub + 1;
+          } 
         }
-
         else if (move_x == 2){
-          nav = nav - 1;
+          if (nav == 1){
+            nav_sub = nav_sub - 1;
+          }
         }
       }
       x_count = LOW;
@@ -130,6 +139,7 @@ void joy_val() {
   }
 
   Serial.print(nav);
+  Serial.print(nav_sub);
   Serial.print(btn_press);
   Serial.print(val_btn);
 
@@ -146,7 +156,7 @@ void joy_val() {
   }
 
   // joy y val deb
-  if (millis() - y_deb > 250){
+  if (millis() - y_deb > 100){
     y_deb = millis();
     if (y_state != move_y){
 
@@ -155,11 +165,21 @@ void joy_val() {
 
       if (y_count == HIGH){
         if (move_y == 2){
-          num_players = num_players - 1;
+          if (nav == 1 && nav_sub == 1){
+            num_players = num_players - 1;
+            if (num_players < 0){
+              num_players = 0;
+            }
+          }
         }
 
         else if (move_y == 1){
-          num_players = num_players + 1;
+          if (nav == 1 && nav_sub == 1){
+            num_players = num_players + 1;
+            if (num_players > 4){
+              num_players = 4;
+            }
+          }
         }
       }
       y_count = LOW;
