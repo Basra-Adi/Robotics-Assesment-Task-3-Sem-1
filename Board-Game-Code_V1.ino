@@ -94,6 +94,21 @@ void sys_menu() {
   }
 }
 
+void variable_conditions(){
+  if (nav == 1 && nav_sub >1){
+      nav_sub = 1;
+  }
+  else if (nav_sub < 0){
+    nav_sub = 0;
+  }
+  if (num_players < 0){
+    num_players = 0;
+  }
+  else if (num_players > 4){
+    num_players = 4;
+  }
+}
+
 void joy_val() {
   int val_x = analogRead(joy_x);
   int val_y = analogRead(joy_y);
@@ -115,20 +130,21 @@ void joy_val() {
   if (millis() - x_deb > 100){
     x_deb = millis();
     if (x_state != move_x){
-
       x_count = HIGH;
       x_state = move_x;
-
       if (x_count == HIGH){
         if (move_x == 1){
+          // page nav
           if(nav == 1){
             nav_sub = nav_sub + 1;
           } 
         }
         else if (move_x == 2){
+          // page nav
           if (nav == 1){
             nav_sub = nav_sub - 1;
           }
+
         }
       }
       x_count = LOW;
@@ -159,26 +175,19 @@ void joy_val() {
   if (millis() - y_deb > 100){
     y_deb = millis();
     if (y_state != move_y){
-
       y_count = HIGH;
       y_state = move_y;
-
       if (y_count == HIGH){
         if (move_y == 2){
+          // update player count
           if (nav == 1 && nav_sub == 1){
             num_players = num_players - 1;
-            if (num_players < 0){
-              num_players = 0;
-            }
           }
         }
-
         else if (move_y == 1){
+          //update player count
           if (nav == 1 && nav_sub == 1){
             num_players = num_players + 1;
-            if (num_players > 4){
-              num_players = 4;
-            }
           }
         }
       }
@@ -207,7 +216,12 @@ void joy_val() {
   Serial.println("");
 }
 
+void player_information() {}
+  vector<string> player_info
+}
+
 void loop() {
   sys_menu();
   joy_val();
+  variable_conditions();
 }
