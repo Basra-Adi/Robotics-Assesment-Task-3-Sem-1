@@ -13,6 +13,8 @@ unsigned long debounceDelay = 50;
 int nav = 0;
 int nav_sub = 0;
 int num_players;
+byte text_color = HIGH;
+byte text_color_bg = LOW;
 
 //Joystick Debounce
 // x value deb
@@ -29,7 +31,6 @@ unsigned long y_deb;
 
 //init of game
 long player_money = 1500000;
-byte game_start = LOW;
 
 #include <SPI.h>
 #include <Adafruit_GFX.h>
@@ -46,58 +47,85 @@ void setup()   {
   pinMode(joy_btn, INPUT_PULLUP);
 }
 
-void sys_menu() {
-  if (nav == 0 && nav_sub == 0){
-    // display init
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE, BLACK);
+void start_page() {
+  // display init
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE, BLACK);
 
-    // display info
-    display.setCursor(13, 20);
-    display.print("New, Game!");
-    display.display();
+  // display info
+  display.setCursor(13, 20);
+  display.print("New, Game!");
+  display.display();
+}
 
-    if (btn_press == HIGH){
-      nav = nav + 1;
-      btn_press == LOW;
+void page_2() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE, BLACK);
+
+  //display info
+  display.setCursor(0, 0);
+  display.println("Number of ");
+  display.print("Players: ");
+  display.print(num_players);
+  display.display();
+}
+
+void page_2_1(){
+  // display init
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(BLACK);
+
+  // display info
+  display.setCursor(0, 0);
+  display.println("Number of ");
+  display.print("Players: ");
+  display.setTextColor(WHITE, BLACK);
+  display.println(num_players);
+  display.display();
+
+  if (btn_press == HIGH && y_count == HIGH){
+    if (move_y == 2 && nav == 1 && nav_sub == 1){
+      // update player count
+        num_players = num_players - 1;
     }
+    else if (move_y == 1 && nav == 1 && nav_sub == 1){
+      //update player count
+      num_players = num_players + 1;
+    }
+    y_count = LOW;
   }
-  else if (nav == 1 && nav_sub == 0){
-    // display init
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE, BLACK);
+    
+}
 
-    //display info
-    display.setCursor(0, 0);
-    display.println("Number of ");
-    display.print("Players: ");
-    display.print(num_players);
-    display.display();
+void player_menu(){
+  // display init
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(!text_color, !text_color_bg);
 
-    if (btn_press == HIGH){
-      nav = nav + 1;
-      game_start = HIGH;
+  // display info
+  display.setCursor(0, 0);
+  display.println("Player 1");
+  display.setCursor(0, 40);
+  display.setTextColor(text_color, text_color_bg);
+  display.println("Back");
+  display.display();
+
+  if (y_state == 2){
+    text_color = LOW;
+    text_color_bg = HIGH;
+  }
+  else if (y_state == 1){
+    text_color = HIGH;
+    text_color_bg = LOW;
+  }
+
+  if (btn_press == HIGH && text_color == LOW){
+      nav = nav - 1;
       btn_press = LOW;
-    }
-  }
-  else if (nav_sub == 1 && nav == 1){
-    // display init
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(BLACK);
-
-    // display info
-    display.setCursor(0, 0);
-    display.println("Number of ");
-    display.print("Players: ");
-    display.setTextColor(WHITE, BLACK);
-    display.println(num_players);
-    display.display();
-
-    //Serial.print(num_players);
-    //Serial.print(" "); 
   }
 }
 
@@ -144,13 +172,13 @@ void joy_val() {
       if (x_count == HIGH){
         if (move_x == 1){
           // page nav
-          if(nav == 1){
+          if (nav == 1){
             nav_sub = nav_sub + 1;
           } 
         }
         else if (move_x == 2){
           // page nav
-          if (nav == 1){
+          if (nav == 1 && btn_press == LOW){
             nav_sub = nav_sub - 1;
           }
 
@@ -180,27 +208,11 @@ void joy_val() {
     if (y_state != move_y){
       y_count = HIGH;
       y_state = move_y;
-      if (y_count == HIGH){
-        if (move_y == 2){
-          // update player count
-          if (nav == 1 && nav_sub == 1){
-            num_players = num_players - 1;
-          }
-        }
-        else if (move_y == 1){
-          //update player count
-          if (nav == 1 && nav_sub == 1){
-            num_players = num_players + 1;
-          }
-        }
-      }
-      y_count = LOW;
     }
     else{
     y_count = LOW;
     }
   }
-  
   // btn deb
   if (val_btn != lastButtonState) {
       lastDebounceTime = millis();
@@ -224,17 +236,37 @@ void player_information() {
   for (byte i = 0; i < num_players; i = i + 1) {
       player_count[i][3] = i + 1;
     }
-  if (game_start == LOW){
+  if (nav == 1){
     for (byte i = 0; i < 3; i = i + 1){
       player_count[0][i] = player_money;
-      Serial.print(player_count[0][i]);
     }
   }
 }
 
 void loop() {
-  sys_menu();
   joy_val();
   variable_conditions();
   player_information();
+
+  if (nav == 0){
+    start_page();
+  }
+  else if (nav == 1 && nav_sub == 0){
+    page_2();
+  }
+  else if (nav == 1 && nav_sub == 1){
+    page_2_1();
+  }
+  else if (nav == 2){
+    player_menu();
+  }
+
+  if (btn_press == HIGH && nav_sub == 0){
+    nav = nav + 1;
+    btn_press = LOW;
+  }
+
+  Serial.print(x_state);
+  Serial.print(" ");
+  Serial.print(nav);
 }
