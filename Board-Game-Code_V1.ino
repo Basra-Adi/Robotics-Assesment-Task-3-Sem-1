@@ -4,8 +4,8 @@ const int joy_btn = 9;
 
 //Button Debounce
 int btn_state;     
-int lastButtonState = LOW;
-int btn_press = LOW; 
+byte lastButtonState = LOW;
+byte btn_press = LOW; 
 unsigned long lastDebounceTime = 0; 
 unsigned long debounceDelay = 50;
 
@@ -24,11 +24,12 @@ unsigned long x_deb;
 // y value deb
 int move_y;
 int y_state;
-int y_count;
+byte y_count;
 unsigned long y_deb;
 
-
-
+//init of game
+long player_money = 1500000;
+byte game_start = LOW;
 
 #include <SPI.h>
 #include <Adafruit_GFX.h>
@@ -74,6 +75,12 @@ void sys_menu() {
     display.print("Players: ");
     display.print(num_players);
     display.display();
+
+    if (btn_press == HIGH){
+      nav = nav + 1;
+      game_start = HIGH;
+      btn_press = LOW;
+    }
   }
   else if (nav_sub == 1 && nav == 1){
     // display init
@@ -89,23 +96,25 @@ void sys_menu() {
     display.println(num_players);
     display.display();
 
-    Serial.print(num_players);
-    Serial.print(" "); 
+    //Serial.print(num_players);
+    //Serial.print(" "); 
   }
 }
 
 void variable_conditions(){
+  //restrictions
   if (nav == 1 && nav_sub >1){
       nav_sub = 1;
   }
   else if (nav_sub < 0){
     nav_sub = 0;
   }
-  if (num_players < 0){
-    num_players = 0;
+  // restrictions on player count
+  if (num_players < 2){
+    num_players = 2;
   }
-  else if (num_players > 4){
-    num_players = 4;
+  else if (num_players > 8){
+    num_players = 8;
   }
 }
 
@@ -153,12 +162,6 @@ void joy_val() {
     x_count = LOW;
     }
   }
-
-  Serial.print(nav);
-  Serial.print(nav_sub);
-  Serial.print(btn_press);
-  Serial.print(val_btn);
-
   // joy y val read
   if (val_y > 700) {
     move_y = 2;
@@ -216,12 +219,22 @@ void joy_val() {
   Serial.println("");
 }
 
-void player_information() {}
-  vector<string> player_info
+void player_information() {
+  int player_count[num_players-1][3];
+  for (byte i = 0; i < num_players; i = i + 1) {
+      player_count[i][3] = i + 1;
+    }
+  if (game_start == LOW){
+    for (byte i = 0; i < 3; i = i + 1){
+      player_count[0][i] = player_money;
+      Serial.print(player_count[0][i]);
+    }
+  }
 }
 
 void loop() {
   sys_menu();
   joy_val();
   variable_conditions();
+  player_information();
 }
