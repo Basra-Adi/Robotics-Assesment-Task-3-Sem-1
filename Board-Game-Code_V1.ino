@@ -12,9 +12,10 @@ unsigned long debounceDelay = 50;
 // Information and nav variables
 int nav = 0;
 int nav_sub = 0;
-int num_players;
+int num_players = 2;
 byte text_color = HIGH;
 byte text_color_bg = LOW;
+long player_count[8][3];
 
 //Joystick Debounce
 // x value deb
@@ -108,7 +109,14 @@ void player_menu(){
 
   // display info
   display.setCursor(0, 0);
-  display.println("Player 1");
+  int player_num[num_players-1][2];
+
+  for (int i = 0; i < num_players-1; i = i + 1){
+    player_num[i][0] = i + 1
+    
+    display.print("Player ")
+    display.println(player_num[i][0])
+  }
   display.setCursor(0, 40);
   display.setTextColor(text_color, text_color_bg);
   display.println("Back");
@@ -127,6 +135,13 @@ void player_menu(){
       nav = nav - 1;
       btn_press = LOW;
   }
+}
+
+void player_info(){
+  display.clearDisplay();
+  display.print("Amount: ");
+  display.println(player_count[0][0]);
+  display.display();
 }
 
 void variable_conditions(){
@@ -232,13 +247,12 @@ void joy_val() {
 }
 
 void player_information() {
-  int player_count[num_players-1][3];
   for (byte i = 0; i < num_players; i = i + 1) {
       player_count[i][3] = i + 1;
     }
   if (nav == 1){
     for (byte i = 0; i < 3; i = i + 1){
-      player_count[0][i] = player_money;
+      player_count[i][0] = player_money;
     }
   }
 }
@@ -260,13 +274,12 @@ void loop() {
   else if (nav == 2){
     player_menu();
   }
-
+  else if (nav == 3){
+    
+  }
   if (btn_press == HIGH && nav_sub == 0){
     nav = nav + 1;
     btn_press = LOW;
   }
-
-  Serial.print(x_state);
-  Serial.print(" ");
   Serial.print(nav);
 }
