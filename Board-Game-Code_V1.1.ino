@@ -10,12 +10,15 @@ unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
 
 // Information and nav variables
-byte nav = 0;
-byte nav_sub = 0;
+int nav = 0;
+int nav_sub = 0;
 byte num_players = 2;
 byte text_color = HIGH;
 byte text_color_bg = LOW;
+byte count_init;
+byte first_array_init = LOW;
 long player_count[8][3];
+byte player_num[8][2];
 
 //Joystick Debounce
 // x value deb
@@ -71,6 +74,8 @@ void page_2() {
   display.print("Players: ");
   display.print(num_players);
   display.display();
+
+  first_array_init = LOW;
 }
 
 void page_2_1(){
@@ -106,52 +111,53 @@ void player_menu(){
   display.clearDisplay();
   display.setTextSize(1);
 
-  //array for player account
-  byte player_num[num_players-1][1];
-
-  for (byte i = 0; i < num_players-1; i++){
+  if (first_array_init == LOW){
+    for (byte i = 0; i < num_players; i++){
     player_num[i][0] = i + 1;
+    player_num[i][1] = 0;
+    }
+    first_array_init = HIGH;
   }
 
-
   // scroll down sys
-  if (move_y == 2){
-    int count_init;
-    for (byte i = 0; i < num_players-1; i++){
-      if (player_num[i][1] != 0) {
-        count_init = player_num[i][1];
-      }
-      else if (count_init == 1){
-        player_num[i][1] = 0;
-        player_num[i + 1][1] = 1;
-      }
-      else{
-        player_num[0][1] = 1;
+  if (y_state == 2 && y_count == HIGH){
+    if (count_init != 1 && player_num[0][1] != 1){
+      player_num[0][1] = 1;
+      count_init = 1;
+    }
+    else if (count_init == 1){
+      for (byte i = 0; i < num_players; i++) {
+        if (player_num[i][1] == 1 && player_num[num_players-1][1] != 1){
+          player_num[i][1] = 0;
+          player_num[i + 1][1] = 1;
+          break;
+        }
       }
     }
   }
-  else if (move_y == 1){
-    for (byte i = 0; i < num_players-1; i++){
+  else if (y_state == 1 && y_count == HIGH){
+    for (byte i = 0; i < num_players; i++){
       if (player_num[i][1] == 1 && player_num[0][1] != 1) {
         player_num[i - 1][1] = 1;
         player_num[i][1] = 0;
+        break;
       }  
     }
   }
+  y_count = LOW;
 
-  for (byte i = 0; i < num_players-1; i++){
+  for (byte i = 0; i < num_players; i++){
     if (player_num[i][1] == 1){
       display.setTextColor(!text_color, !text_color_bg);
       display.print("Player: ");
       display.println(player_num[i][0]);
-      display.display();
     }
-    else if (player_num[i][1] == 0){
+    else{
       display.setTextColor(BLACK);
       display.print("Player: ");
       display.println(player_num[i][0]);
-      display.display();
     }
+    
   }
 
   display.setCursor(0, 40);
@@ -183,10 +189,10 @@ void player_info(){
 
 void variable_conditions(){
   //restrictions
-  if (nav == 1 && nav_sub >1){
-      nav_sub = 1;
+  if (nav == 1 && nav_sub > 1){
+    nav_sub = 1;
   }
-  else if (nav_sub < 0){
+  else if (nav == 1 && nav_sub < 0){
     nav_sub = 0;
   }
   // restrictions on player count
@@ -201,7 +207,7 @@ void variable_conditions(){
 void joy_val() {
   int val_x = analogRead(joy_x);
   int val_y = analogRead(joy_y);
-  int val_btn = digitalRead(joy_btn);
+  byte val_btn = digitalRead(joy_btn);
 
 
   // joy x val read
@@ -312,12 +318,10 @@ void loop() {
     player_menu();
   }
   else if (nav == 3){
-    
+    player_information();
   }
   if (btn_press == HIGH && nav_sub == 0){
     nav = nav + 1;
     btn_press = LOW;
   }
-
-  Serial.print(nav_sub);
 }
