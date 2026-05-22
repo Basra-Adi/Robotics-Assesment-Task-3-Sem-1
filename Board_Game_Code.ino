@@ -478,9 +478,9 @@ void setup() {
   pinMode(S2, OUTPUT);
   pinMode(S3, OUTPUT);
   pinMode(SOut, INPUT);
-  //frequency scaling  =20%
+  //frequency scaling  = 100%
   digitalWrite(S0, HIGH);
-  digitalWrite(S1, LOW);
+  digitalWrite(S1, HIGH);
   myStepper.setSpeed(rpm);
 }
 
@@ -586,7 +586,7 @@ void joy_val() {
   if (val_x > 700) {
     move_x = 1;
   }
-  else if (val_x < 100){
+  else if (val_x < 200){
     move_x = 2;
   }
   else{
@@ -624,7 +624,7 @@ void joy_val() {
   if (val_y > 700) {
     move_y = 2;
   }
-  else if (val_y < 100){
+  else if (val_y < 200){
     move_y = 1;
   }
   else{
@@ -670,6 +670,7 @@ void joy_val() {
 
 void loop() {
   joy_val();
+  Serial.println(analogRead(joy_x));
   variable_conditions();
   if (nav == 0){
     start_page();
@@ -683,6 +684,7 @@ void loop() {
   else if (nav == 1 && nav_sub == 2){
     page_2_2();
     if (btn_press == HIGH){
+      complete = 1;
       // red color filter
         digitalWrite(S2,LOW);
         digitalWrite(S3,LOW);
